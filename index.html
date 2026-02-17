@@ -3,113 +3,134 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gender Reveal - Suspense Ultime 👶</title>
+<title>Gender Reveal - Faites vos paris 👶</title>
 
 <style>
-    body {
-        margin: 0;
-        font-family: 'Arial', sans-serif;
-        text-align: center;
-        background: linear-gradient(135deg, #ffdde1, #c1e3ff);
-        color: #333;
-    }
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: linear-gradient(135deg, #ffdde1, #c1e3ff);
+    color: #333;
+}
 
-    .container {
-        padding: 50px 20px;
-    }
+.container {
+    padding: 40px 20px;
+}
 
-    h1 {
-        font-size: 3em;
-        margin-bottom: 10px;
-    }
+h1 {
+    font-size: 2.8em;
+}
 
-    .subtitle {
-        font-size: 1.5em;
-        margin-bottom: 40px;
-    }
+#countdown {
+    font-size: 2.5em;
+    margin: 20px 0;
+    font-weight: bold;
+}
 
-    #countdown {
-        font-size: 3em;
-        font-weight: bold;
-        margin-bottom: 30px;
-    }
+.vote-buttons button {
+    font-size: 1.2em;
+    padding: 15px 30px;
+    margin: 10px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: 0.3s;
+}
 
-    .reveal {
-        font-size: 4em;
-        font-weight: bold;
-        display: none;
-        animation: pop 1s ease forwards;
-    }
+.boy { background-color: #6ec6ff; }
+.girl { background-color: #ff9ecf; }
 
-    @keyframes pop {
-        0% { transform: scale(0.5); opacity: 0; }
-        100% { transform: scale(1); opacity: 1; }
-    }
+.vote-buttons button:hover {
+    transform: scale(1.05);
+}
 
-    .footer {
-        margin-top: 50px;
-        font-size: 0.9em;
-        opacity: 0.6;
-    }
+.results {
+    margin-top: 20px;
+    font-size: 1.4em;
+}
 
-    .emoji {
-        font-size: 2em;
-    }
+.reveal {
+    display: none;
+    font-size: 3em;
+    margin-top: 30px;
+    animation: pop 1s ease forwards;
+}
+
+@keyframes pop {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
 </style>
 </head>
-
 <body>
 
 <div class="container">
-    <h1>👶 Suspense Absolu 👶</h1>
-    <div class="subtitle">Est-ce que bébé sera plutôt... 🩵 ou 🩷 ?</div>
+    <h1>👶 Faites vos paris ! 👶</h1>
+    <div id="countdown"></div>
 
-    <div id="countdown">Chargement...</div>
+    <div class="vote-buttons" id="voteSection">
+        <button class="boy" onclick="vote('boy')">💙 Garçon</button>
+        <button class="girl" onclick="vote('girl')">💖 Fille</button>
+    </div>
+
+    <div class="results" id="results"></div>
 
     <div id="reveal" class="reveal">
         🎉 C'EST UNE SURPRISE !!! 🎉
-        <br>
-        <span class="emoji">🍼🎊</span>
-    </div>
-
-    <div class="footer">
-        Préparez les paris... plus que quelques instants 😏
     </div>
 </div>
 
 <script>
-    // ⚠️ Mets bien l'année en cours
-    const targetDate = new Date("February 18, 2026 10:00:00").getTime();
+const targetDate = new Date("February 17, 2026 11:52:00").getTime();
 
-    const countdownElement = document.getElementById("countdown");
-    const revealElement = document.getElementById("reveal");
+let votes = JSON.parse(localStorage.getItem("votes")) || { boy: 0, girl: 0 };
+let hasVoted = localStorage.getItem("hasVoted");
 
-    const interval = setInterval(function() {
+function updateResults() {
+    const total = votes.boy + votes.girl;
 
-        const now = new Date().getTime();
-        const distance = targetDate - now;
+    if (total === 0) {
+        document.getElementById("results").innerHTML = "Aucun vote pour l'instant 😏";
+        return;
+    }
 
-        if (distance <= 0) {
-            clearInterval(interval);
-            countdownElement.style.display = "none";
-            revealElement.style.display = "block";
-            document.body.style.background = "linear-gradient(135deg, #a8edea, #fed6e3)";
-            return;
-        }
+    const boyPercent = Math.round((votes.boy / total) * 100);
+    const girlPercent = Math.round((votes.girl / total) * 100);
 
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+    document.getElementById("results").innerHTML =
+        `💙 Garçon : ${boyPercent}% (${votes.boy} votes)<br>
+         💖 Fille : ${girlPercent}% (${votes.girl} votes)`;
+}
 
-        countdownElement.innerHTML =
-            days + "j " +
-            hours + "h " +
-            minutes + "m " +
-            seconds + "s ";
+function vote(choice) {
+    if (hasVoted) {
+        alert("Tu as déjà voté 😄");
+        return;
+    }
 
-    }, 1000);
-</script>
+    votes[choice]++;
+    localStorage.setItem("votes", JSON.stringify(votes));
+    localStorage.setItem("hasVoted", true);
+    hasVoted = true;
 
-</body>
-</html>
+    updateResults();
+}
+
+updateResults();
+
+const interval = setInterval(function() {
+    const now = new Date().getTime();
+    const distance = targetDate - now;
+
+    if (distance <= 0) {
+        clearInterval(interval);
+        document.getElementById("countdown").style.display = "none";
+        document.getElementById("voteSection").style.display = "none";
+        document.getElementById("results").style.display = "none";
+        document.getElementById("reveal").style.display = "block";
+        return;
+    }
+
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hou
